@@ -1,0 +1,110 @@
+body {
+  margin: 0;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.animated-container {
+  justify-content: center;
+}
+
+.gradient-block {
+  color: rgba(255,255,255,0.9);
+  background: linear-gradient(-45deg, #FFA63D, #FF3D77, #338AFF, #3CF0C5);
+  background-size: 300%;
+  animation: gradient-shift 8s linear infinite;
+}
+
+.gradient-block-inner {
+  width: 100%;
+  height: 100%;
+  color: rgba(255,255,255,0.9);
+  background: linear-gradient(-45deg, #FFA63D, #FF3D77, #338AFF, #3CF0C5);
+  background-size: 300%;
+  animation: gradient-shift 8s linear infinite;
+  position: absolute;
+  z-index: -1;
+  filter: blur(20px);
+  opacity: 0.7;
+}
+
+.stepper-icon-container-inner {
+  width: calc(100% - 5px);
+  height: calc(100% - 5px);
+  border-radius: 27px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stepper-icon-container-dark-mode {
+  width: calc(100% - 5px);
+  height: calc(100% - 5px);
+  border-radius: 27px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #131313;
+}
+
+.simple-gradient-block {
+  background: linear-gradient( 95deg,rgb(242,113,33) 0%,rgb(233,64,87) 50%,rgb(138,35,135) 100%);
+}
+
+.flex-center-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.qr-code-scanner-video {
+  div {
+    width: 800px!important;
+  }
+  video {
+    top: 0px!important;
+    left: 50%!important;
+    height: 100%!important;
+    display: block!important;
+    overflow: hidden!important;
+    position: absolute!important;
+    transform: scaleX(-1)translateX(50%)!important;
+    width: 800px!important;
+  }
+}
+
+.no-decorate {
+  text-decoration: none;
+}
+
+.disable-number-spinners {
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
+  input[type="number"] {
+      -moz-appearance: textfield;
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%
+  }
+  50% {   
+    background-position: 100% 50%
+  }
+  100% {
+    background-position: 0% 50%
+  }
+}
