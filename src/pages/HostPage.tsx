@@ -73,7 +73,7 @@ const EntrantPage = (props: IEntrantPage) => {
                   {host.events.map((event, index) =>
                     <Grid key={`event-item-${index}`} item xs={12} sm={12} md={6} lg={4}>
                       <CardActionArea>
-                        <Link to={`${hostSlug}/${event.slug}`} className="no-decorate">
+                        <Link to={`/${hostSlug}/${event.slug}`} className="no-decorate">
                           <Card className={classes.eventPaper}>
                             <Typography className={classes.eventTitle} variant={"h5"}>
                               {event.name}

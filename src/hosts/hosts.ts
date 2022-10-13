@@ -6,7 +6,7 @@ export interface IEvent {
   tokens: IToken[]
 }
 
-interface IToken {
+export interface IToken {
   address: string
   network: 'mainnet'
   standard: 'ERC721'
@@ -32,7 +32,7 @@ const ExampleHost : IHost = {
       startTimeUnix: 1664841600,
       tokens: [
         {
-          address: '0x975d74900ef48F53Fa7d4F3550FA0C89f3B3c1Dc',
+          address: '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85',
           network: 'mainnet',
           standard: 'ERC721',
           tokensPerTicket: 1,

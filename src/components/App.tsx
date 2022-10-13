@@ -1,7 +1,7 @@
 import React from 'react';
 
-// import { HashRouter } from 'react-router-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
+// import { BrowserRouter } from 'react-router-dom';
 
 import { createTheme, StyledEngineProvider, Theme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -24,6 +24,9 @@ const App = (props: PropsFromRedux) => {
     () =>
       createTheme({
         palette: {
+          secondary: {
+            main: '#ff1493'
+          },
           mode: props.darkMode ? 'dark' : 'light',
           ...(props.darkMode && {
             background: {
@@ -37,7 +40,7 @@ const App = (props: PropsFromRedux) => {
   );
 
   return (
-    <BrowserRouter>
+    <HashRouter>
         <StyledEngineProvider injectFirst>
           <ThemeProvider theme={theme}>
             <CssBaseline/>
@@ -54,7 +57,7 @@ const App = (props: PropsFromRedux) => {
             <BlockNumberIndicator/>
           </ThemeProvider>
         </StyledEngineProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

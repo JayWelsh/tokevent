@@ -66,6 +66,17 @@ code {
   flex-direction: column;
 }
 
+.flex-center-all {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.transition-opacity {
+  opacity: 1;
+  transition: all 0.2s ease-in-out;
+}
+
 .qr-code-scanner-video {
   div {
     width: 800px!important;
@@ -84,6 +95,10 @@ code {
 
 .no-decorate {
   text-decoration: none;
+}
+
+.matrix-text {
+  color: #32cd32
 }
 
 .disable-number-spinners {

@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 
+import { useEthers } from '@usedapp/core'
+import { utils } from 'ethers';
+
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -15,7 +18,12 @@ import { Theme } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
+import QRCode from "react-qr-code";
+
+import { useSnackbar } from 'notistack';
+
 import GradientStepperHorizontal from '../components/GradientStepperHorizontal';
+import EthereumInteractionZone from '../components/EthereumInteractionZone';
 
 import { slugToHost, IHost, IEvent } from '../hosts';
 
@@ -86,6 +94,20 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     instructionText: {
       textAlign: 'center',
+    },
+    messageDisplay: {
+        backgroundColor: '#030303',
+        padding: theme.spacing(3),
+        borderRadius: 4,
+        marginBottom: theme.spacing(4),
+        maxWidth: '100%',
+        overflow: 'scroll',
+    },
+    messageDisplayPreElement: {
+        margin: 0,
+    },
+    actionButton: {
+        marginBottom: theme.spacing(15),
     }
   }),
 );
@@ -116,7 +138,11 @@ interface IEntrantPage {
 
 const EntrantPage = (props: IEntrantPage) => {
 
-    const classes = useStyles()
+    const classes = useStyles();
+
+    const { account, library } = useEthers();
+
+    const { enqueueSnackbar } = useSnackbar();
 
     const { hostSlug, darkMode, eventSlug } = props;
 
@@ -126,6 +152,8 @@ const EntrantPage = (props: IEntrantPage) => {
     const [otpArray, setOtpArray] = useState<string[]>(Array.from({length: 6}));
     const [otp, setOtp] = useState(0);
     const [validOtp, setValidOtp] = useState(false);
+    const [message, setMessage] = useState('');
+    const [signedMessage, setSignedMessage] = useState('');
 
     const inputRefDigit1 = useRef(null);
     const inputRefDigit2 = useRef(null);
@@ -135,6 +163,15 @@ const EntrantPage = (props: IEntrantPage) => {
     const inputRefDigit6 = useRef(null);
 
     const isMobileView = useMobileView();
+
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         let otpString = otpArray?.reduce((acc, item)=> item && (item?.length === 1) && (item.indexOf('e') === -1) && (item.indexOf('.') === -1) && (item.indexOf(',') === -1) ? acc + item : acc)?.toString();
@@ -147,6 +184,14 @@ const EntrantPage = (props: IEntrantPage) => {
     }, [otpArray])
 
     useEffect(() => {
+        if(account && otp && validOtp && hostSlug && eventSlug) {
+            let newMessage = {hostId: hostSlug, eventId: eventSlug, otp: otp, timestamp: Math.floor(Date.now() / 1000), account: utils.getAddress(account)};
+            let stringified = JSON.stringify(newMessage, null, 4);
+            setMessage(stringified);
+        }
+    }, [otp, validOtp, account, hostSlug, eventSlug]);
+
+    useEffect(() => {
         if(slugToHost[hostSlug]) {
             setHost(slugToHost[hostSlug])
             let event = slugToHost[hostSlug]?.events?.find((item) => item.slug === eventSlug);
@@ -155,6 +200,22 @@ const EntrantPage = (props: IEntrantPage) => {
             }
         }
     }, [hostSlug, eventSlug])
+
+    const signMessage = async () => {
+        if(library) {
+            setSignedMessage('');
+            const signer = library.getSigner();
+            await signer.signMessage(message)
+            .then((signedMessage) => {
+                console.log({signedMessage})
+                if(mounted.current && signedMessage) {
+                    setActiveStep(2);
+                    setSignedMessage(signedMessage.toString());
+                }
+            })
+            .catch((e) => enqueueSnackbar(e?.message ? e?.message : 'error signing message', { variant: 'error'}));
+        }
+    }
 
     const handleInputChange = (event:  React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>, inputIndex: number) => {
         let newOtpArray = [...otpArray];
@@ -448,12 +509,41 @@ const EntrantPage = (props: IEntrantPage) => {
                         </Grid>
                     </Grid>
                     <div className="flex-center-col">
-                        <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => setActiveStep(1)}>Next Step</Button>
+                        <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, classes.actionButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => setActiveStep(1)}>Next Step</Button>
                     </div>
                 </>
             }
-            <pre>{JSON.stringify(otpArray, null, 4)}</pre>
-            <pre>{otp}</pre>
+            {activeStep === 1 &&
+                <>
+                    <div className="flex-center-col">
+                        {message &&
+                            <div className={classes.messageDisplay}>
+                                <pre className={[classes.messageDisplayPreElement, 'matrix-text'].join(' ')}>
+                                    {JSON.stringify(JSON.parse(message), null, 4)}
+                                </pre>
+                            </div>
+                        }
+                        <EthereumInteractionZone connectButtonClass={[classes.scanButton, classes.navigationButton, classes.actionButton, 'simple-gradient-block'].join(' ')}>
+                            <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, classes.actionButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => signMessage()}>Sign Message</Button>
+                        </EthereumInteractionZone>
+                    </div>
+                </>
+            }
+            {activeStep === 2 &&
+                <div style={{ height: "auto", background: 'white', margin: "0 auto", maxWidth: 600, padding: 8, width: "100%", marginBottom: 200 }}>
+                    <QRCode
+                    size={256}
+                    style={{ height: "auto", maxWidth: "100%", width: "100%", verticalAlign: "top"}}
+                    value={JSON.stringify({
+                        message,
+                        signedMessage
+                    })}
+                    viewBox={`0 0 256 256`}
+                    />
+                </div>
+            }
+            {/* <pre>{JSON.stringify(otpArray, null, 4)}</pre>
+            <pre>{otp}</pre> */}
             {/* <pre>{JSON.stringify(host, null, 4)}</pre>
             <pre>{JSON.stringify(event, null, 4)}</pre> */}
         </Container>

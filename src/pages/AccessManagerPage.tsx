@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -19,23 +19,48 @@ import Fab from '@mui/material/Fab';
 import PasswordIcon from '@mui/icons-material/Password';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import NavigationIcon from '@mui/icons-material/Navigation';
+import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import TokenIcon from '@mui/icons-material/Token';
 import ReplayIcon from '@mui/icons-material/Replay';
+import PendingIcon from '@mui/icons-material/Pending';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 import Paper from '@mui/material/Paper';
+import CircularProgress from '@mui/material/CircularProgress';
+
+import { useEthers } from '@usedapp/core'
 
 import AnimatedNumber from '../components/AnimatedNumber';
 import GradientStepperHorizontal from '../components/GradientStepperHorizontal';
 import QRModal from '../components/QRModal';
+import SignedMessageEvaluationReport from '../components/SignedMessageEvaluationReport';
 
 import { slugToHost, IHost } from '../hosts';
 import { useOTP, useMobileView } from '../hooks';
-import { getHostEventURL } from '../utils';
+import { getHostEventURL, verifySignedMessage, extractRelevantEvent, checkTokenBalances, extractMessageReport, IEvaluationReport } from '../utils';
 
 interface IAccessManagerPage {
   hostSlug: string
   darkMode: boolean
 }
+
+const evaluationSteps = [
+  {
+    label: 'Signature Verification',
+    IconElement: LockPersonIcon,
+  },
+  {
+    label: 'Extract Event Requirements',
+    IconElement: EventNoteIcon,
+  },
+  {
+    label: 'Scan Token Balances',
+    IconElement: TokenIcon,
+  }
+]
 
 const steps = [
   {
@@ -124,13 +149,36 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     instructionText: {
       textAlign: 'center',
+    },
+    evaluationStepText: {
+      marginTop: theme.spacing(2),
+      textAlign: 'center',
+    },
+    evaluationStepIcon: {
+      marginRight: theme.spacing(2),
+    },
+    evaluationTitleIcon: {
+      marginBottom: theme.spacing(2),
+    },
+    evaluationPendingStep: {
+      opacity: 0.5,
+    },
+    verificationErrorMessage: {
+      color: 'red',
+      marginTop: theme.spacing(2)
     }
   }),
 );
 
+const sleep = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const AccessManagerPage = (props: IAccessManagerPage) => {
 
     const classes = useStyles()
+
+    const { library } = useEthers();
 
     const { hostSlug, darkMode } = props;
 
@@ -138,10 +186,25 @@ const AccessManagerPage = (props: IAccessManagerPage) => {
     const [activeStep, setActiveStep] = useState(0);
     const [showModalQR, setShowModalQR] = useState(false);
     const [latestScanResult, setLatestScanResult] = useState('');
+    
+    const [evaluatingSignedMessage, setEvaluatingSignedMessage] = useState(false);
+    const [showEvaluationReportModal, setShowEvaluationReportModal] = useState(false);
+    const [evaluationStepIndex, setEvaluationStepIndex] = useState(0);
+    const [evaluationFailedReason, setEvaluationFailedReason] = useState<string | boolean>(false);
+    const [evaluationReport, setEvaluationReport] = useState<IEvaluationReport | boolean>(false);
+
+    const mounted = useRef(false);
 
     const { otp, newOTP } = useOTP();
 
     const isMobileView = useMobileView();
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     useEffect(() => {
       if(slugToHost[hostSlug]) {
@@ -150,10 +213,56 @@ const AccessManagerPage = (props: IAccessManagerPage) => {
     }, [hostSlug])
 
     useEffect(() => {
-      if(activeStep === 0) {
-        newOTP();
+      if(activeStep === 3) {
+        setLatestScanResult('');
       }
     }, [activeStep])
+
+    useEffect(() => {
+      const evaluateSignedMessage = async () => {
+        setEvaluationStepIndex(0);
+        setEvaluationFailedReason(false);
+        setShowEvaluationReportModal(false);
+        console.log({latestScanResult})
+        if(latestScanResult?.length > 0) {
+          setEvaluatingSignedMessage(true);
+          await sleep(500);
+          let validSigner = await verifySignedMessage(latestScanResult, setEvaluationFailedReason);
+          if(!validSigner) {
+            setEvaluatingSignedMessage(false);
+            return;
+          }
+          setEvaluationStepIndex(1);
+          // extract event info
+          let event = await extractRelevantEvent(latestScanResult);
+          if(!event) {
+            setEvaluationFailedReason('Signature contains invalid event, please provide entrant with a new OTP and try again');
+            setEvaluatingSignedMessage(false);
+            return;
+          }
+          await sleep(500);
+          setEvaluationStepIndex(2);
+          if(!library) {
+            setEvaluationFailedReason('Ethers library not available, please refresh page and retry message verification');
+            setEvaluatingSignedMessage(false);
+            return;
+          }
+          let tokenBalanceResults = await checkTokenBalances(library, event.tokens, validSigner);
+          if(!tokenBalanceResults) {
+            setEvaluationFailedReason('Unable to scan token balances, please refresh page and retry message verification');
+            setEvaluatingSignedMessage(false);
+            return;
+          }
+          setEvaluationStepIndex(3);
+          let report = await extractMessageReport(latestScanResult, tokenBalanceResults, otp);
+          setEvaluationReport(report);
+          setShowEvaluationReportModal(true);
+        } else {
+          setEvaluatingSignedMessage(false);
+        }
+      }
+      evaluateSignedMessage();
+    }, [latestScanResult, library])
     
     return (
         <Container maxWidth="md">
@@ -190,7 +299,7 @@ const AccessManagerPage = (props: IAccessManagerPage) => {
               {/* {activeStep < 2 && <Button onClick={() => setActiveStep((activeStep - 1 >= 0) ? activeStep - 1 : activeStep)}>Previous Step</Button>} */}
               {/* <Button className={classes.navigationButton} disabled={activeStep === 0} onClick={() => setActiveStep(0)}>Restart</Button>
               <Button className={classes.navigationButton} disabled={activeStep === 3} onClick={() => setActiveStep((activeStep + 1 < steps.length) ? activeStep + 1 : activeStep)}>Next Step</Button> */}
-              <Fab className={[classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => {if(activeStep === 0) { newOTP() } else { setActiveStep(0) }}}>
+              <Fab className={[classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => {if(activeStep === 0) { newOTP() } else { newOTP();setActiveStep(0) }}}>
                 <ReplayIcon style={{height: '2rem', width: '2rem'}} />
                 {/* Restart */}
               </Fab>
@@ -218,10 +327,48 @@ const AccessManagerPage = (props: IAccessManagerPage) => {
               }
               {activeStep === 3 &&
                 <div className="flex-center-col">
-                  <Typography className={classes.instructionText} variant={"h5"}>
-                    Please scan the QR code generated by the attendee's signature.
-                  </Typography>
-                  <Button size="large" className={[classes.scanButton, classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => setShowModalQR(true)}>Scan QR Code</Button>
+                  {(!evaluatingSignedMessage && !evaluationFailedReason) && 
+                    <>
+                      <Typography className={classes.instructionText} variant={"h5"}>
+                        Please scan the QR code generated by the attendee's signature.
+                      </Typography>
+                      <Button size="large" className={[classes.scanButton, classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => setShowModalQR(true)}>Scan QR Code</Button>
+                    </>
+                  }
+                  {(evaluatingSignedMessage || evaluationFailedReason) && 
+                    <>
+                      <TroubleshootIcon fontSize="large" className={classes.evaluationTitleIcon} />
+                      <Typography className={[classes.instructionText, 'flex-center-all'].join(' ')} variant={"h5"}>
+                        Signed Message Evaluation
+                      </Typography>
+                      {evaluationSteps.map((item, index) => {
+                        return (
+                          <div className={[classes.evaluationStepText, 'flex-center-all', 'transition-opacity', index > evaluationStepIndex && classes.evaluationPendingStep].join(' ')}>
+                            <div className={[classes.evaluationStepIcon, 'flex-center-all'].join(' ')}>
+                              {index > evaluationStepIndex && <PendingIcon/>}
+                              {index < evaluationStepIndex && <TaskAltIcon style={{color: '#32cd32'}}/>}
+                              {!evaluationFailedReason && index === evaluationStepIndex && <CircularProgress size={24} color="secondary" />}
+                              {evaluationFailedReason && index === evaluationStepIndex && <WarningAmberIcon style={{color: 'red'}} />}
+                            </div>
+                            <Typography variant={"h6"}>
+                              {item.label}
+                            </Typography>
+                          </div>
+                        )
+                      })}
+                      {evaluationFailedReason &&
+                        <>
+                          <Typography variant={"subtitle1"} className={classes.verificationErrorMessage}>
+                            {evaluationFailedReason}
+                          </Typography>
+                          <Button size="large" className={[classes.scanButton, classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => setShowModalQR(true)}>Rescan QR Code</Button>
+                        </>
+                      }
+                      {showEvaluationReportModal && <SignedMessageEvaluationReport evaluationReport={evaluationReport} />}
+                      {/* {evaluationStepIndex === 3 && <Button size="large" className={[classes.scanButton, classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => setShowEvaluationReportModal(true)}>Show Report</Button>} */}
+                      {evaluationStepIndex === 3 && <Button size="large" className={[classes.scanButton, classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => setShowModalQR(true)}>Rescan QR Code</Button>}
+                    </>
+                  }
                 </div>
               }
             </Paper>
