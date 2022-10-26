@@ -2,6 +2,7 @@ name: Example workflow for S3 Deploy
 on: [push]
 jobs:
   run:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       REACT_APP_IPFS_GATEWAY: ${{ secrets.REACT_APP_IPFS_GATEWAY }}
