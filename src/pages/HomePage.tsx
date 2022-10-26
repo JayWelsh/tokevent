@@ -2,74 +2,90 @@ import React from 'react';
 
 import makeStyles from '@mui/styles/makeStyles';
 import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import { CardActionArea } from '@mui/material';
 
-import { useEtherBalance, useEthers } from '@usedapp/core'
-import { formatEther } from '@ethersproject/units'
+import { Link } from 'react-router-dom';
 
+import { Theme } from '@mui/material/styles';
+import createStyles from '@mui/styles/createStyles';
 
-import { STAKING_CONTRACT } from '../utils/constants'
+import { slugToHost } from '../hosts';
+import { extractIpfsLink } from '../utils';
 
-const useStyles = makeStyles({
-    root: {
-        minWidth: 275,
-        marginBottom: 15
-    },
-    title: {
-        fontSize: 14,
-    },
-});
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+        root: {
+            minWidth: 275,
+            marginBottom: 15
+        },
+        title: {
+            marginTop: theme.spacing(6),
+            marginBottom: theme.spacing(2),
+            textAlign: 'center',
+        },
+        subtitle: {
+            marginBottom: theme.spacing(6),
+            textAlign: 'center',
+        },
+        hostContainer: {
+            marginBottom: theme.spacing(6),
+            display: 'flex',
+            justifyContent: 'center'
+        },
+        hostCoverImageContainer: {
+            width: '100%',
+            height: 250,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+        },
+        hostInfo: {
+            padding: theme.spacing(2),
+        },
+        hostTitle: {
+            marginBottom: theme.spacing(2),
+        }
+    })
+);
 
-const HomePage = () => {
+interface IHomePage {
+    darkMode: boolean
+}
+
+const HomePage = (props: IHomePage) => {
     const classes = useStyles();
-    const { account } = useEthers()
-    
-    const userBalance = useEtherBalance(account)
-    const stakingBalance = useEtherBalance(STAKING_CONTRACT)
 
     return (
-        <Container maxWidth="md">
-            <h1>Home Page</h1>
-            <div>
-                {stakingBalance && (
-                    <Card className={classes.root}>
-                        <CardContent>
-                            <Typography className={classes.title} color="textSecondary" gutterBottom>
-                                ETH2 staking contract holds:
-                            </Typography>
-                            <Typography variant="h5" component="h2">
-                                {formatEther(stakingBalance)} ETH
-                            </Typography>
-                        </CardContent>
-                    </Card>
+        <Container maxWidth="lg">
+            <Typography className={classes.title} variant={"h2"}>
+                Host Selection
+            </Typography>
+            <Typography className={classes.subtitle} variant={"h5"}>
+                Who is hosting your event?
+            </Typography>
+            <Grid container className={classes.hostContainer} spacing={3}>
+                {Object.entries(slugToHost).map((slugAndHost, index) =>
+                    <Grid key={`host-item-${index}-${slugAndHost[0]}`} item xs={12} sm={12} md={6} lg={6}>
+                        <CardActionArea>
+                            <Link to={`/${slugAndHost[0]}`} className="no-decorate">
+                                <Card>
+                                    <div className={classes.hostCoverImageContainer} style={{backgroundImage: `url(${extractIpfsLink(slugAndHost[1].image)})`}} />
+                                    <div className={classes.hostInfo}>
+                                        <Typography className={classes.hostTitle} variant={"h5"}>
+                                            {slugAndHost[1].name}
+                                        </Typography>
+                                        <Typography variant={"h6"}>
+                                            {slugAndHost[1]?.description ? slugAndHost[1].description : 'tokevent.org event host'}
+                                        </Typography>
+                                    </div>
+                                </Card>
+                            </Link>
+                        </CardActionArea>
+                    </Grid>
                 )}
-                {account && (
-                    <Card className={classes.root}>
-                        <CardContent>
-                            <Typography className={classes.title} color="textSecondary" gutterBottom>
-                                Account:
-                            </Typography>
-                            <Typography variant="h5" component="h2">
-                                {account}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                )}
-                {userBalance && (
-                    <Card className={classes.root}>
-                        <CardContent>
-                            <Typography className={classes.title} color="textSecondary" gutterBottom>
-                                Ether balance:
-                            </Typography>
-                            <Typography variant="h5" component="h2">
-                                {formatEther(userBalance)} ETH
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+            </Grid>
         </Container>
     )
 };

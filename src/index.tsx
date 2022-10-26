@@ -22,6 +22,7 @@ const config = {
   readOnlyUrls: {
     [ChainId.Mainnet]: mainnetReadOnlyUrl(),
   },
+  multicallVersion: 1 as const,
   autoConnect: false,
 }
 

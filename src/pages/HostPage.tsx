@@ -13,6 +13,7 @@ import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
 import { slugToHost, IHost } from '../hosts';
+import { extractIpfsLink } from '../utils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -30,7 +31,13 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       justifyContent: 'center'
     },
-    eventPaper: {
+    eventCoverImageContainer: {
+      width: '100%',
+      height: 250,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    },
+    eventInfo: {
       padding: theme.spacing(2),
     },
     eventTitle: {
@@ -46,7 +53,7 @@ interface IEntrantPage {
 
 const EntrantPage = (props: IEntrantPage) => {
 
-    const { hostSlug, darkMode } = props;
+    const { hostSlug } = props;
 
     const [host, setHost] = useState<IHost>();
 
@@ -71,17 +78,20 @@ const EntrantPage = (props: IEntrantPage) => {
                 {/* <pre>{JSON.stringify(host, null, 4)}</pre> */}
                 <Grid container className={classes.eventContainer} spacing={2}>
                   {host.events.map((event, index) =>
-                    <Grid key={`event-item-${index}`} item xs={12} sm={12} md={6} lg={4}>
+                    <Grid key={`event-item-${index}`} item xs={12} sm={12} md={6} lg={6}>
                       <CardActionArea>
                         <Link to={`/${hostSlug}/${event.slug}`} className="no-decorate">
-                          <Card className={classes.eventPaper}>
-                            <Typography className={classes.eventTitle} variant={"h5"}>
-                              {event.name}
-                            </Typography>
-                            <Typography variant={"h6"}>
-                              {event.description}
-                            </Typography>
-                          </Card>
+                            <Card>
+                              <div className={classes.eventCoverImageContainer} style={{backgroundImage: `url(${extractIpfsLink(event.image)})`}} />
+                              <div className={classes.eventInfo}>
+                                <Typography className={classes.eventTitle} variant={"h5"}>
+                                  {event.name}
+                                </Typography>
+                                <Typography variant={"h6"}>
+                                  {event.description}
+                                </Typography>
+                              </div>
+                            </Card>
                         </Link>
                       </CardActionArea>
                     </Grid>

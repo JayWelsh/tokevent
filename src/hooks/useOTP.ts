@@ -30,7 +30,7 @@ const useOTP = () => {
 
   useEffect(() => {
     newOTP();
-  }, [])
+  })
 
   return {
     otp,

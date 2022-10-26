@@ -1,9 +1,14 @@
 import { createBrowserHistory, createHashHistory } from 'history';
 import { ChainId, shortenAddress } from '@usedapp/core'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcProvider, FallbackProvider } from '@ethersproject/providers'
 import { utils, Contract } from 'ethers';
+
+import { SvgIconTypeMap } from '@mui/material/SvgIcon';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
+
 import { ERC721 } from '../abis';
-import { slugToHost, IToken, IEvent } from '../hosts';
+import { slugToHost, IToken } from '../hosts';
+import { IPFS_GATEWAY } from './constants'
 
 export function configureHistory() {
 	return window.matchMedia('(display-mode: standalone)').matches
@@ -26,7 +31,7 @@ export const centerShortenLongString = (string: string, maxLength: number) => {
 	}
 }
 
-const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
+const ETHERSCAN_PREFIXES: { [chainId in ChainId]?: string } = {
 	1: '',
 	3: 'ropsten.',
 	4: 'rinkeby.',
@@ -93,42 +98,46 @@ export function isAddress(address: string | undefined): boolean {
 }
 
 export function getHostEventURL(hostSlug: string) {
-	return `http://localhost:3000/${hostSlug}`
+	return `tokevent.org/${hostSlug}`
 }
 
-export const verifySignedMessage = async (rawMessage: string, setEvaluationFailedReason?: (arg0: string) => void) => {
+export const verifySignedMessage = async (rawMessage: string, setEvaluationFailedReason?: (arg0: string) => void, setHasCriticalError?: (arg0: boolean) => void) => {
 	let parsedMessage = JSON.parse(rawMessage);
 	let hasSetErrorMessage = false;
 	if(parsedMessage.message && parsedMessage.signedMessage) {
 		let originalMessage = JSON.parse(parsedMessage.message);
 		if(setEvaluationFailedReason) {
 			if(!originalMessage?.account) {
-				setEvaluationFailedReason('Invalid signed message, missing account property, please provide entrant with a new OTP and try again');
+				setEvaluationFailedReason('Missing account property, re-auth with new OTP');
 				hasSetErrorMessage = true;
 			}
 			if(!originalMessage?.hostId) {
-				setEvaluationFailedReason('Invalid signed message, missing host ID property, please provide entrant with a new OTP and try again');
+				setEvaluationFailedReason('Missing host ID property, re-auth with new OTP');
 				hasSetErrorMessage = true;
 			}
 			if(!originalMessage?.otp) {
-				setEvaluationFailedReason('Invalid signed message, missing OTP property, please provide entrant with a new OTP and try again');
+				setEvaluationFailedReason('Missing OTP property, re-auth with new OTP');
 				hasSetErrorMessage = true;
 			}
 			if(!originalMessage?.timestamp) {
-				setEvaluationFailedReason('Invalid signed message, missing timestamp property, please provide entrant with a new OTP and try again');
+				setEvaluationFailedReason('Missing timestamp property, re-auth with new OTP');
 				hasSetErrorMessage = true;
 			}
 		}
 		if(originalMessage?.account && originalMessage?.hostId && originalMessage?.eventId && originalMessage?.otp && originalMessage?.timestamp) {
 			// perform actual verification
 			let signer = await utils.verifyMessage(`${parsedMessage.message}`,parsedMessage.signedMessage);
+			console.log({signer})
 			if(signer === originalMessage.account) {
 				return signer;
 			}
 		}
 	}
+	if(hasSetErrorMessage && setHasCriticalError) {
+		setHasCriticalError(true);
+	}
 	if(!hasSetErrorMessage && setEvaluationFailedReason) {
-		setEvaluationFailedReason('Invalid signature, please provide entrant with a new OTP and try again');
+		setEvaluationFailedReason('Invalid signature, re-auth with new OTP');
 	}
 	return false;
 }
@@ -161,23 +170,29 @@ interface ITokenBalanceResult {
 	linkToRelevantHoldings: string
 }
 
-export const checkTokenBalances = async (ethersLib: JsonRpcProvider, eventTokens: IToken[], holder: string) => {
+export const checkTokenBalances = async (ethersLib: JsonRpcProvider | FallbackProvider, eventTokens: IToken[] | undefined, holder: string) => {
 	let results = [];
-	for(let eventToken of eventTokens) {
-		if(eventToken.network === 'mainnet') {
-			if(eventToken.standard === 'ERC721') {
-				const tokenContract = await new Contract(eventToken.address, ERC721, ethersLib);
-				const balance = Number(await tokenContract.balanceOf(holder));
-				results.push({
-					tokenAddress: eventToken.address,
-					balance,
-					tokensPerTicket: eventToken.tokensPerTicket,
-					linkToRelevantHoldings: `https://looksrare.org/accounts/${holder}?filters=%7B%22collection%22%3A%22${eventToken.address}%7D`
-				})
+	if(eventTokens && eventTokens.length > 0) {
+		for(let eventToken of eventTokens) {
+			if(eventToken.network === 'mainnet') {
+				if(eventToken.standard === 'ERC721') {
+					const tokenContract = await new Contract(eventToken.address, ERC721, ethersLib);
+					const balance = Number(await tokenContract.balanceOf(holder));
+					results.push({
+						tokenAddress: eventToken.address,
+						balance,
+						tokensPerTicket: eventToken.tokensPerTicket,
+						linkToRelevantHoldings: `https://looksrare.org/accounts/${holder}?filters=%7B%22collection%22%3A%22${eventToken.address}%7D`
+					})
+				}
 			}
 		}
 	}
 	return results;
+}
+
+export const sleep = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export interface IEvaluationReport {
@@ -187,9 +202,10 @@ export interface IEvaluationReport {
 	timestamp: number
 	tokenBalanceResults: ITokenBalanceResult[]
 	ticketEntitlement: number
+	onlyAddressVerification: boolean
 }
 
-export const extractMessageReport = async (rawMessage: string, tokenBalanceResults: ITokenBalanceResult[], currentOtp: string) => {
+export const extractMessageReport = async (rawMessage: string, tokenBalanceResults: ITokenBalanceResult[], currentOtp: string, onlyAddressVerification: boolean = false) => {
 	let isValidMessage = await verifySignedMessage(rawMessage);
 	if(isValidMessage) {
 		let parsedMessage = JSON.parse(rawMessage);
@@ -209,6 +225,7 @@ export const extractMessageReport = async (rawMessage: string, tokenBalanceResul
 							timestamp: originalMessage?.timestamp,
 							tokenBalanceResults,
 							ticketEntitlement: ticketEntitlement,
+							onlyAddressVerification: onlyAddressVerification,
 						};
 						return messageReport;
 					}
@@ -217,4 +234,26 @@ export const extractMessageReport = async (rawMessage: string, tokenBalanceResul
 		}
 	}
 	return false;
+}
+
+export interface IEvaluationSteps {
+  label: string
+  IconElement: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
+      muiName: string;
+  }
+}
+
+export const extractIpfsLink = (ipfsLinkRaw: string) => {
+	const indexOfIpfsSignature = ipfsLinkRaw.indexOf('ipfs://');
+	if(indexOfIpfsSignature > -1) {
+		let splitLink = ipfsLinkRaw.split('ipfs://');
+		if(splitLink[1]) {
+			return `${IPFS_GATEWAY}${splitLink[1]}`
+		}
+		console.error(`[extractIpfsLink] Invalid IPFS Link (no hash segment): ${ipfsLinkRaw}`);
+		return '';
+	} else {
+		console.error(`[extractIpfsLink] Invalid IPFS Link (no 'ipfs://'): ${ipfsLinkRaw}`);
+		return '';
+	}
 }

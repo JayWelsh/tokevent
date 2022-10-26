@@ -31,12 +31,19 @@ const PageContainer = (reduxProps: PropsFromRedux & RouteComponentProps) => {
         <Navigation>
             <div className={classes.root}>
                 <Switch>
+                    <Route path="/" exact render={(props) => homeRoute(props, reduxProps.darkMode)} />
                     <Route path="/:hostSlug/access" exact render={(props) => accessManagerRoute(props, reduxProps.darkMode)} />
                     <Route path="/:hostSlug" exact render={(props) => hostRoute(props, reduxProps.darkMode)} />
                     <Route path="/:hostSlug/:eventSlug" exact render={(props) => entrantRoute(props, reduxProps.darkMode)} />
                 </Switch>
             </div>
         </Navigation>
+    )
+}
+
+const homeRoute = (props: RouteComponentProps, darkMode: boolean) => {
+    return (
+        <HomePage darkMode={darkMode}/>
     )
 }
 

@@ -66,15 +66,35 @@ code {
   flex-direction: column;
 }
 
+.flex-center-vertical {
+  display: flex;
+  align-items: center;
+}
+
 .flex-center-all {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+.flex-left-align-center {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+}
+
 .transition-opacity {
   opacity: 1;
   transition: all 0.2s ease-in-out;
+}
+
+.opacity-button {
+  opacity: 0.6;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  &:hover { 
+    opacity: 1
+  }
 }
 
 .qr-code-scanner-video {
@@ -99,6 +119,25 @@ code {
 
 .matrix-text {
   color: #32cd32
+}
+
+.otp-inner-shadow {
+  box-shadow: inset 0 0 10px #000000;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  border-radius: 30px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.otp-input-container {
+  overflow: hidden;
+  border-radius: 30px;
+  max-height: 187px;
+  border: none;
+  z-index: 2;
+  position: relative;
 }
 
 .disable-number-spinners {

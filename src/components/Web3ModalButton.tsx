@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { useEthers, shortenAddress, useLookupAddress } from '@usedapp/core'
+import React, { useEffect, useState } from 'react'
+import { useEthers, shortenAddress } from '@usedapp/core'
 import styled from 'styled-components'
 import Web3Modal from 'web3modal'
+import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 
 import { useSnackbar } from 'notistack';
 
@@ -18,17 +17,13 @@ interface IWeb3ModalButtonProps {
 }
 
 export const Web3ModalButton = (props: IWeb3ModalButtonProps) => {
-  const { children, isConsideredMobile } = props;
-  const { account, activate, deactivate, chainId } = useEthers()
-  const ens = useLookupAddress()
+  const { children } = props;
+  const { account, activate, deactivate } = useEthers()
+  // const ens = useLookupAddress()
   const { error } = useEthers()
   const { enqueueSnackbar } = useSnackbar();
   
   const [activateError, setActivateError] = useState('')
-  const [showNetworkSwitchModal, setShowNetworkSwitchModal] = useState(false);
-  // const [switchNetworkFunction, setSwitchNetworkFunction] = useState(() => {});
-  // const switchNetworkFunction = useRef(() => {});
-  const [provider, setProvider] = useState();
 
   useEffect(() => {
     if (error) {
@@ -72,10 +67,18 @@ export const Web3ModalButton = (props: IWeb3ModalButtonProps) => {
         options: {
           bridge: 'https://bridge.walletconnect.org',
           rpc: {
-            1: "https://eth-mainnet.g.alchemy.com/v2/fCyft9OQ_hnOaKwCk8JiubkHMoBbnL5q",
+            1: `${process.env.REACT_APP_ALCHEMY_RPC_URL}`,
           },
-          // infuraId: '0cdca40ec1c4459d8f1ecafd88c795d1',
         },
+      },
+      walletlink: {
+        package: CoinbaseWalletSDK, 
+        options: {
+          appName: "Tokevent | NFT Ticketing",
+          rpc: {
+            1: `${process.env.REACT_APP_ALCHEMY_RPC_URL}`,
+          },
+        }
       },
     }
 
@@ -85,7 +88,6 @@ export const Web3ModalButton = (props: IWeb3ModalButtonProps) => {
     
     try {
       const useProvider = await web3Modal.connect()
-      setProvider(useProvider);
       if(useProvider?.chainId) {
         await activate(useProvider)
       } else {
@@ -130,7 +132,8 @@ export const Web3ModalButton = (props: IWeb3ModalButtonProps) => {
             //   </Tooltip>
             // </>
             <>
-              <AccountChip label={ens ?? shortenAddress(account)}/>
+              {/* <AccountChip label={ens ?? shortenAddress(account)}/> */}
+              <AccountChip label={shortenAddress(account)}/>
               <Button color="inherit" onClick={() => deactivate()}>Disconnect</Button>
             </>
           ) : (
@@ -153,13 +156,6 @@ export const Web3ModalButton = (props: IWeb3ModalButtonProps) => {
     )
   }
 }
-
-const ErrorWrapper = styled.div`
-  color: #ff3960;
-  margin-right: 40px;
-  margin-left: 40px;
-  overflow: auto;
-`
 
 const Account = styled.div`
   display: flex;

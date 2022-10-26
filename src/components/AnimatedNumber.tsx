@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import AnimatedNumbers from "react-animated-numbers";
-import { useMobileView } from '../hooks';
-import PinIcon from '@mui/icons-material/Pin';
 
 interface IAnimatedNumber {
   number: string
@@ -19,15 +17,6 @@ const AnimatedNumber = (props: IAnimatedNumber) => {
           animateToNumber={Number(number)}
           fontStyle={{ fontSize: fontSize, textAlign: 'center' }}
         ></AnimatedNumbers>
-        {/* {number && 
-          <AnimatedNumbers
-            animateToNumber={Number(number)}
-            fontStyle={{ fontSize: fontSize, textAlign: 'center' }}
-          ></AnimatedNumbers>
-        } */}
-        {/* {!number && 
-          `?`
-        } */}
       </>
     )
 };

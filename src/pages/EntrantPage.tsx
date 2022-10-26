@@ -4,9 +4,7 @@ import { useEthers } from '@usedapp/core'
 import { utils } from 'ethers';
 
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import InputBase from '@mui/material/InputBase';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 
@@ -18,14 +16,14 @@ import { Theme } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
+import OtpInput from '../components/OtpInput';
+
 import QRCode from "react-qr-code";
 
 import { useSnackbar } from 'notistack';
 
 import GradientStepperHorizontal from '../components/GradientStepperHorizontal';
 import EthereumInteractionZone from '../components/EthereumInteractionZone';
-
-import { slugToHost, IHost, IEvent } from '../hosts';
 
 import { useMobileView } from '../hooks';
 
@@ -66,7 +64,7 @@ const useStyles = makeStyles((theme: Theme) =>
       textAlign: 'center',
     },
     subtitle: {
-      marginBottom: theme.spacing(6),
+      marginBottom: theme.spacing(4),
       textAlign: 'center',
     },
     stepperContainer: {
@@ -146,21 +144,22 @@ const EntrantPage = (props: IEntrantPage) => {
 
     const { hostSlug, darkMode, eventSlug } = props;
 
-    const [host, setHost] = useState<IHost>();
-    const [event, setEvent] = useState<IEvent>();
     const [activeStep, setActiveStep] = useState(0);
-    const [otpArray, setOtpArray] = useState<string[]>(Array.from({length: 6}));
-    const [otp, setOtp] = useState(0);
+    const [otp, setOtp] = useState('');
     const [validOtp, setValidOtp] = useState(false);
     const [message, setMessage] = useState('');
     const [signedMessage, setSignedMessage] = useState('');
+    const [signedMessageOriginal, setSignedMessageOriginal] = useState('');
 
-    const inputRefDigit1 = useRef(null);
-    const inputRefDigit2 = useRef(null);
-    const inputRefDigit3 = useRef(null);
-    const inputRefDigit4 = useRef(null);
-    const inputRefDigit5 = useRef(null);
-    const inputRefDigit6 = useRef(null);
+    const handleChange = (otp: number) => {
+        let otpString = otp.toString();
+        setOtp(otpString);
+        if(otpString && otpString.length === 6 && ((Number(otpString) % 1) === 0)) {
+            setValidOtp(true);
+        } else {
+            setValidOtp(false);
+        }
+    };
 
     const isMobileView = useMobileView();
 
@@ -174,167 +173,33 @@ const EntrantPage = (props: IEntrantPage) => {
     }, []);
 
     useEffect(() => {
-        let otpString = otpArray?.reduce((acc, item)=> item && (item?.length === 1) && (item.indexOf('e') === -1) && (item.indexOf('.') === -1) && (item.indexOf(',') === -1) ? acc + item : acc)?.toString();
-        setOtp(Number(otpString));
-        if(otpString && otpString.length === 6 && ((Number(otpString) % 1) === 0)) {
-            setValidOtp(true);
-        } else {
-            setValidOtp(false);
-        }
-    }, [otpArray])
-
-    useEffect(() => {
         if(account && otp && validOtp && hostSlug && eventSlug) {
             let newMessage = {hostId: hostSlug, eventId: eventSlug, otp: otp, timestamp: Math.floor(Date.now() / 1000), account: utils.getAddress(account)};
             let stringified = JSON.stringify(newMessage, null, 4);
             setMessage(stringified);
+        } else {
+            setMessage('')
         }
     }, [otp, validOtp, account, hostSlug, eventSlug]);
-
-    useEffect(() => {
-        if(slugToHost[hostSlug]) {
-            setHost(slugToHost[hostSlug])
-            let event = slugToHost[hostSlug]?.events?.find((item) => item.slug === eventSlug);
-            if(event) {
-                setEvent(event);
-            }
-        }
-    }, [hostSlug, eventSlug])
 
     const signMessage = async () => {
         if(library) {
             setSignedMessage('');
+            setSignedMessageOriginal('');
             const signer = library.getSigner();
-            await signer.signMessage(message)
+            let signedMessageOriginal = `${message}`;
+            setSignedMessageOriginal(signedMessageOriginal);
+            await signer.signMessage(signedMessageOriginal)
             .then((signedMessage) => {
-                console.log({signedMessage})
                 if(mounted.current && signedMessage) {
                     setActiveStep(2);
                     setSignedMessage(signedMessage.toString());
+                    // setSignedMessageOriginal(signedMessageOriginal);
                 }
             })
             .catch((e) => enqueueSnackbar(e?.message ? e?.message : 'error signing message', { variant: 'error'}));
         }
     }
-
-    const handleInputChange = (event:  React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>, inputIndex: number) => {
-        let newOtpArray = [...otpArray];
-        //@ts-ignore
-        newOtpArray[inputIndex] = event.nativeEvent.data ? event.nativeEvent.data : null;
-        setOtpArray(newOtpArray);
-        if(inputIndex === 0 && inputRefDigit2.current) {
-            //@ts-ignore
-            // inputRefDigit2.current.focus();
-            if(event.nativeEvent.data && inputRefDigit2.current) {
-                //@ts-ignore
-                inputRefDigit2.current.select();
-                //@ts-ignore
-                inputRefDigit1.current.value = event.nativeEvent.data
-            }
-        }
-        if(inputIndex === 1) {
-            //@ts-ignore
-            if(event.nativeEvent.data && inputRefDigit3.current) {
-                //@ts-ignore
-                inputRefDigit3.current.select();
-                //@ts-ignore
-                inputRefDigit2.current.value = event.nativeEvent.data
-            } else if(inputRefDigit1.current) {
-                //@ts-ignore
-                inputRefDigit1.current.select();
-            }
-        }
-        if(inputIndex === 2) {
-            //@ts-ignore
-            if(event.nativeEvent.data && inputRefDigit4.current) {
-                //@ts-ignore
-                inputRefDigit4.current.select();
-                //@ts-ignore
-                inputRefDigit3.current.value = event.nativeEvent.data
-            } else if(inputRefDigit2.current) {
-                //@ts-ignore
-                inputRefDigit2.current.select();
-            }
-        }
-        if(inputIndex === 3) {
-            //@ts-ignore
-            if(event.nativeEvent.data && inputRefDigit5.current) {
-                //@ts-ignore
-                inputRefDigit5.current.select();
-                //@ts-ignore
-                inputRefDigit4.current.value = event.nativeEvent.data
-            } else if(inputRefDigit3.current) {
-                //@ts-ignore
-                inputRefDigit3.current.select();
-            }
-        }
-        if(inputIndex === 4) {
-            //@ts-ignore
-            if(event.nativeEvent.data && inputRefDigit6.current) {
-                //@ts-ignore
-                inputRefDigit6.current.select();
-                //@ts-ignore
-                inputRefDigit5.current.value = event.nativeEvent.data
-            } else if(inputRefDigit4.current) {
-                //@ts-ignore
-                inputRefDigit4.current.select();
-            }
-        }
-        if(inputIndex === 5 && inputRefDigit5.current) {
-            //@ts-ignore
-            if(!event.nativeEvent.data) {
-                //@ts-ignore
-                inputRefDigit5.current.select();
-            } else {
-                //@ts-ignore
-                inputRefDigit6.current.value = event.nativeEvent.data
-            }
-        }
-        console.log({event, inputIndex});
-    }
-
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>, inputIndex: number) => {
-        if (event.key === 'Backspace' || event.key === 'Delete') {
-            if(inputIndex === 0) {
-                //do nothing
-            } else if (inputIndex === 1) {
-                //@ts-ignore
-                let currentValue = inputRefDigit2?.current?.value;
-                if(!currentValue) {
-                    //@ts-ignore
-                    inputRefDigit1?.current?.focus();
-                }
-            } else if (inputIndex === 2) {
-                //@ts-ignore
-                let currentValue = inputRefDigit3?.current?.value;
-                if(!currentValue) {
-                    //@ts-ignore
-                    inputRefDigit2?.current?.select();
-                }
-            } else if (inputIndex === 3) {
-                //@ts-ignore
-                let currentValue = inputRefDigit4?.current?.value;
-                if(!currentValue) {
-                    //@ts-ignore
-                    inputRefDigit3?.current?.select();
-                }
-            } else if (inputIndex === 4) {
-                //@ts-ignore
-                let currentValue = inputRefDigit5?.current?.value;
-                if(!currentValue) {
-                    //@ts-ignore
-                    inputRefDigit4?.current?.select();
-                }
-            } else if (inputIndex === 5) {
-                //@ts-ignore
-                let currentValue = inputRefDigit6?.current?.value;
-                if(!currentValue) {
-                    //@ts-ignore
-                    inputRefDigit5?.current?.select();
-                }
-            }
-        }
-    };
     
     return (
         <Container maxWidth="md">
@@ -349,165 +214,15 @@ const EntrantPage = (props: IEntrantPage) => {
             </Box>
             {activeStep === 0 &&
                 <>
-                    <Grid container className={[classes.otpRow, 'disable-number-spinners'].join(' ')} spacing={2}>
-                        <Grid key={`otp-digit-1`} item xs={4} sm={4} md={2} lg={2}>
-                            <div className={[classes.numberContainer, darkMode ? classes.numberContainerDarkMode : classes.numberContainerLightMode].join(' ')}>
-                                <div className={'gradient-block-inner'}/>
-                                <div className={classes.innerShadow}/>
-                                <div className={classes.numberInnerContainer}>
-                                    <InputBase
-                                        sx={{ 
-                                            fontSize: isMobileView ? '5rem' : '10rem', 
-                                            zIndex: 10,
-                                            fontWeight: 300, 
-                                            "& input": {
-                                                textAlign: "center"
-                                            }
-                                        }}
-                                        type="number"
-                                        autoFocus={true}
-                                        inputRef={inputRefDigit1}
-                                        onChange={(event) => handleInputChange(event, 0)}
-                                        // onKeyDown={(event) => handleKeyDown(event, 0)}
-                                        onClick={() => {
-                                            //@ts-ignore
-                                            if(inputRefDigit1?.current) { inputRefDigit1.current.select() }
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </Grid>
-                        <Grid key={`otp-digit-2`} item xs={4} sm={4} md={2} lg={2}>
-                            <div className={[classes.numberContainer, darkMode ? classes.numberContainerDarkMode : classes.numberContainerLightMode].join(' ')}>
-                                <div className={'gradient-block-inner'}/>
-                                <div className={classes.innerShadow}/>
-                                <div className={classes.numberInnerContainer}>
-                                    <InputBase
-                                        sx={{ 
-                                            fontSize: isMobileView ? '5rem' : '10rem', 
-                                            zIndex: 10,
-                                            fontWeight: 300, 
-                                            "& input": {
-                                                textAlign: "center"
-                                            }
-                                        }}
-                                        type="number"
-                                        inputRef={inputRefDigit2}
-                                        onChange={(event) => handleInputChange(event, 1)}
-                                        // onKeyDown={(event) => handleKeyDown(event, 1)}
-                                        onClick={() => {
-                                            //@ts-ignore
-                                            if(inputRefDigit2?.current) { inputRefDigit2.current.select() }
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </Grid>
-                        <Grid key={`otp-digit-3`} item xs={4} sm={4} md={2} lg={2}>
-                            <div className={[classes.numberContainer, darkMode ? classes.numberContainerDarkMode : classes.numberContainerLightMode].join(' ')}>
-                                <div className={'gradient-block-inner'}/>
-                                <div className={classes.innerShadow}/>
-                                <div className={classes.numberInnerContainer}>
-                                    <InputBase
-                                        sx={{ 
-                                            fontSize: isMobileView ? '5rem' : '10rem', 
-                                            zIndex: 10,
-                                            fontWeight: 300, 
-                                            "& input": {
-                                                textAlign: "center"
-                                            }
-                                        }}
-                                        type="number"
-                                        inputRef={inputRefDigit3}
-                                        onChange={(event) => handleInputChange(event, 2)}
-                                        // onKeyDown={(event) => handleKeyDown(event, 2)}
-                                        onClick={() => {
-                                            //@ts-ignore
-                                            if(inputRefDigit3?.current) { inputRefDigit3.current.select() }
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </Grid>
-                        <Grid key={`otp-digit-4`} item xs={4} sm={4} md={2} lg={2}>
-                            <div className={[classes.numberContainer, darkMode ? classes.numberContainerDarkMode : classes.numberContainerLightMode].join(' ')}>
-                                <div className={'gradient-block-inner'}/>
-                                <div className={classes.innerShadow}/>
-                                <div className={classes.numberInnerContainer}>
-                                    <InputBase
-                                        sx={{ 
-                                            fontSize: isMobileView ? '5rem' : '10rem', 
-                                            zIndex: 10,
-                                            fontWeight: 300, 
-                                            "& input": {
-                                                textAlign: "center"
-                                            }
-                                        }}
-                                        type="number"
-                                        inputRef={inputRefDigit4}
-                                        onChange={(event) => handleInputChange(event, 3)}
-                                        // onKeyDown={(event) => handleKeyDown(event, 3)}
-                                        onClick={() => {
-                                            //@ts-ignore
-                                            if(inputRefDigit4?.current) { inputRefDigit4.current.select() }
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </Grid>
-                        <Grid key={`otp-digit-5`} item xs={4} sm={4} md={2} lg={2}>
-                            <div className={[classes.numberContainer, darkMode ? classes.numberContainerDarkMode : classes.numberContainerLightMode].join(' ')}>
-                                <div className={'gradient-block-inner'}/>
-                                <div className={classes.innerShadow}/>
-                                <div className={classes.numberInnerContainer}>
-                                    <InputBase
-                                        sx={{ 
-                                            fontSize: isMobileView ? '5rem' : '10rem', 
-                                            zIndex: 10,
-                                            fontWeight: 300, 
-                                            "& input": {
-                                                textAlign: "center"
-                                            }
-                                        }}
-                                        type="number"
-                                        inputRef={inputRefDigit5}
-                                        onChange={(event) => handleInputChange(event, 4)}
-                                        // onKeyDown={(event) => handleKeyDown(event, 4)}
-                                        onClick={() => {
-                                            //@ts-ignore
-                                            if(inputRefDigit5?.current) { inputRefDigit5.current.select() }
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </Grid>
-                        <Grid key={`otp-digit-6`} item xs={4} sm={4} md={2} lg={2}>
-                            <div className={[classes.numberContainer, darkMode ? classes.numberContainerDarkMode : classes.numberContainerLightMode].join(' ')}>
-                                <div className={'gradient-block-inner'}/>
-                                <div className={classes.innerShadow}/>
-                                <div className={classes.numberInnerContainer}>
-                                    <InputBase
-                                        sx={{ 
-                                            fontSize: isMobileView ? '5rem' : '10rem', 
-                                            zIndex: 10,
-                                            fontWeight: 300, 
-                                            "& input": {
-                                                textAlign: "center"
-                                            }
-                                        }}
-                                        type="number"
-                                        inputRef={inputRefDigit6}
-                                        onChange={(event) => handleInputChange(event, 5)}
-                                        // onKeyDown={(event) => handleKeyDown(event, 5)}
-                                        onClick={() => {
-                                            //@ts-ignore
-                                            if(inputRefDigit6?.current) { inputRefDigit6.current.select() }
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </Grid>
-                    </Grid>
+                    <div className={classes.otpRow}>
+                        <OtpInput
+                            value={otp}
+                            onChange={handleChange}
+                            numInputs={6}
+                            isMobileView={isMobileView}
+                            darkMode={darkMode}
+                        />
+                    </div>
                     <div className="flex-center-col">
                         <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, classes.actionButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => setActiveStep(1)}>Next Step</Button>
                     </div>
@@ -516,12 +231,21 @@ const EntrantPage = (props: IEntrantPage) => {
             {activeStep === 1 &&
                 <>
                     <div className="flex-center-col">
+                        <Typography className={classes.subtitle} variant={"h5"}>
+                            {account ? `Message Signing` : `Connect your wallet to complete this step`}
+                        </Typography>
                         {message &&
-                            <div className={classes.messageDisplay}>
-                                <pre className={[classes.messageDisplayPreElement, 'matrix-text'].join(' ')}>
-                                    {JSON.stringify(JSON.parse(message), null, 4)}
-                                </pre>
-                            </div>
+                            <>
+                                <Typography className={classes.subtitle} style={{maxWidth: 620}} variant={"subtitle1"}>
+                                    Signing this message will create a signature which can be used to reveal your wallet address & the event you are attending, signing this message will not put any funds at risk and will not enable any on-chain transactions.
+                                </Typography>
+                                {/* once you sign this message, you will be presented with a QR code and other options for sharing your signed message, do not share the signed message publicly, if you are unable to show event managers the QR code directly, use a private communication channel to share it with event management. */}
+                                <div className={classes.messageDisplay}>
+                                    <pre className={[classes.messageDisplayPreElement, 'matrix-text'].join(' ')}>
+                                        {JSON.stringify(JSON.parse(message), null, 4)}
+                                    </pre>
+                                </div>
+                            </>
                         }
                         <EthereumInteractionZone connectButtonClass={[classes.scanButton, classes.navigationButton, classes.actionButton, 'simple-gradient-block'].join(' ')}>
                             <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, classes.actionButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => signMessage()}>Sign Message</Button>
@@ -530,22 +254,27 @@ const EntrantPage = (props: IEntrantPage) => {
                 </>
             }
             {activeStep === 2 &&
-                <div style={{ height: "auto", background: 'white', margin: "0 auto", maxWidth: 600, padding: 8, width: "100%", marginBottom: 200 }}>
-                    <QRCode
-                    size={256}
-                    style={{ height: "auto", maxWidth: "100%", width: "100%", verticalAlign: "top"}}
-                    value={JSON.stringify({
-                        message,
-                        signedMessage
-                    })}
-                    viewBox={`0 0 256 256`}
-                    />
+                <div className="flex-center-col">
+                    <Typography className={classes.subtitle} variant={"h5"}>
+                        {`Signed Message`}
+                    </Typography>
+                    <Typography className={classes.subtitle} style={{maxWidth: 620}} variant={"subtitle1"}>
+                    {/* a malicious party could try to use your signed message to impersonate you and gain access to the event. */}
+                        <span style={{color: 'red'}}>IMPORTANT</span><br/><b>Do not share your QR code with anyone other than official event entry staff</b>
+                    </Typography>
+                    <div style={{ height: "auto", background: 'white', margin: "0 auto", maxWidth: 600, padding: 8, width: "100%", marginBottom: 200 }}>
+                        <QRCode
+                        size={256}
+                        style={{ height: "auto", maxWidth: "100%", width: "100%", verticalAlign: "top"}}
+                        value={JSON.stringify({
+                            message: signedMessageOriginal,
+                            signedMessage
+                        })}
+                        viewBox={`0 0 256 256`}
+                        />
+                    </div>
                 </div>
             }
-            {/* <pre>{JSON.stringify(otpArray, null, 4)}</pre>
-            <pre>{otp}</pre> */}
-            {/* <pre>{JSON.stringify(host, null, 4)}</pre>
-            <pre>{JSON.stringify(event, null, 4)}</pre> */}
         </Container>
     )
 };

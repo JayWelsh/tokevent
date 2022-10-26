@@ -1,14 +1,16 @@
 import React from 'react';
 
-import { HashRouter } from 'react-router-dom';
-// import { BrowserRouter } from 'react-router-dom';
+// import { HashRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 
 import { createTheme, StyledEngineProvider, Theme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import '../styles/App.css';
+import { version } from '../../package.json';
 import { PropsFromRedux } from '../containers/AppContainer';
 import BlockNumberIndicator from './BlockNumberIndicator';
+import VersionNumberIndicator from './VersionNumberIndicator';
 
 import { SnackbarProvider } from 'notistack';
 
@@ -40,7 +42,7 @@ const App = (props: PropsFromRedux) => {
   );
 
   return (
-    <HashRouter>
+    <BrowserRouter>
         <StyledEngineProvider injectFirst>
           <ThemeProvider theme={theme}>
             <CssBaseline/>
@@ -55,9 +57,10 @@ const App = (props: PropsFromRedux) => {
               <PageContainerContainer/>
             </SnackbarProvider>
             <BlockNumberIndicator/>
+            <VersionNumberIndicator version={version}/>
           </ThemeProvider>
         </StyledEngineProvider>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 
