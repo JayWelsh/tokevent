@@ -5,8 +5,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
-      REACT_APP_IPFS_GATEWAY: ${{ secrets.REACT_APP_IPFS_GATEWAY }}
-      REACT_APP_ALCHEMY_RPC_URL: ${{ secrets.REACT_APP_ALCHEMY_RPC_URL }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
@@ -19,6 +17,8 @@ jobs:
           run: yarn build
           env:
             REACT_APP_API_URL: ${{ secrets.API_ENDPOINT }}
+            REACT_APP_IPFS_GATEWAY: ${{ secrets.REACT_APP_IPFS_GATEWAY }}
+            REACT_APP_ALCHEMY_RPC_URL: ${{ secrets.REACT_APP_ALCHEMY_RPC_URL }}
 
         - name: Deploy
           uses: reggionick/s3-deploy@v3
