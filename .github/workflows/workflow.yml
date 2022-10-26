@@ -1,5 +1,8 @@
 name: Example workflow for S3 Deploy
-on: [push]
+on:
+  push:
+    branches:
+      - main
 jobs:
   run:
     if: github.ref == 'refs/heads/main'
