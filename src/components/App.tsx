@@ -11,6 +11,7 @@ import { version } from '../../package.json';
 import { PropsFromRedux } from '../containers/AppContainer';
 import BlockNumberIndicator from './BlockNumberIndicator';
 import VersionNumberIndicator from './VersionNumberIndicator';
+import Footer from './Footer';
 
 import { SnackbarProvider } from 'notistack';
 
@@ -55,6 +56,7 @@ const App = (props: PropsFromRedux) => {
               autoHideDuration={4000}
             >
               <PageContainerContainer/>
+              <Footer/>
             </SnackbarProvider>
             <BlockNumberIndicator/>
             <VersionNumberIndicator version={version}/>
