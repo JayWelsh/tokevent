@@ -171,7 +171,7 @@ const AccessManagerPage = (props: IAccessManagerPage) => {
     return (
         <Container maxWidth="md">
             <Typography className={classes.title} variant={"h2"}>
-              Access Management
+              Access Manager
             </Typography>
             <Typography className={classes.subtitle} variant={"h5"}>
               Authenticate attendees who wish to use their NFTs as tickets.

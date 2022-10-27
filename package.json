@@ -1,6 +1,6 @@
 {
   "name": "tokevent",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "dependencies": {
     "@coinbase/wallet-sdk": "^3.5.3",
