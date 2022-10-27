@@ -6,6 +6,15 @@ This is a platform made for token-gating physical events (e.g. using NFTs as tic
 
 The construction of this platform was made possible by an independent infrastructure grant from https://seen.haus - thank you for supporting independent infrastructure and enabling the development of this public good for the NFT space.
 
+## How to add a new host/event to tokevent.org?
+
+1. Fork this repository
+2. Navigate to `src/hosts/hosts.ts`
+3. Create a new `Host` (e.g. `DemoHost`), there are some example `Host` entries already present which can be used as a reference (please note that any images you want to display must be uploaded to ipfs and must use the `ipfs://<HASH>` convention as image links, examples can be seen in existing hosts).
+4. Add any events that you would like to add into your `Host`.
+5. Add your `Host` to the `slugToHost` object, assign the slug that you would like to use in the tokevent.org URL as the key that maps to your host (e.g. `'demo': DemoHost`) would mean that your events would be visible via `https://tokevent.org/demo`.
+6. Open a pull request into the `main` branch of this repository, from your fork, and your pull request will be reviewed.
+7. Once your pull request is merged, your host and events will show up on tokevent.org
 
 ## IPFS-ready
 
