@@ -7,6 +7,8 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+import ReplayIcon from '@mui/icons-material/Replay';
 
 import PinIcon from '@mui/icons-material/Pin';
 import SignMessageIcon from '@mui/icons-material/MailLock';
@@ -72,16 +74,16 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: theme.spacing(8),
     },
     navigationContainer: {
-      marginBottom: theme.spacing(4),
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
+        marginTop: theme.spacing(2),  
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: theme.spacing(15),
     },
     otpRow: {
       marginBottom: theme.spacing(6)
     },
     scanButton: {
-      marginTop: theme.spacing(2),
       fontSize: '1.25rem',
       paddingLeft: '20px',
       paddingRight: '20px'
@@ -104,9 +106,6 @@ const useStyles = makeStyles((theme: Theme) =>
     messageDisplayPreElement: {
         margin: 0,
     },
-    actionButton: {
-        marginBottom: theme.spacing(15),
-    }
   }),
 );
 
@@ -223,9 +222,9 @@ const EntrantPage = (props: IEntrantPage) => {
                             darkMode={darkMode}
                         />
                     </div>
-                    <div className="flex-center-col">
-                        <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, classes.actionButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => setActiveStep(1)}>Next Step</Button>
-                    </div>
+                    <Box className={classes.navigationContainer} sx={{ width: '100%' }}>
+                        <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => setActiveStep(1)}>Next Step</Button>
+                    </Box>
                 </>
             }
             {activeStep === 1 &&
@@ -247,9 +246,15 @@ const EntrantPage = (props: IEntrantPage) => {
                                 </div>
                             </>
                         }
-                        <EthereumInteractionZone connectButtonClass={[classes.scanButton, classes.navigationButton, classes.actionButton, 'simple-gradient-block'].join(' ')}>
-                            <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, classes.actionButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => signMessage()}>Sign Message</Button>
-                        </EthereumInteractionZone>
+                        <Box className={classes.navigationContainer} sx={{ width: '100%' }}>
+                            <EthereumInteractionZone connectButtonClass={[classes.scanButton, classes.navigationButton, 'simple-gradient-block'].join(' ')}>
+                                <Fab className={[classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => {setActiveStep(0)}}>
+                                    <ReplayIcon style={{height: '2rem', width: '2rem'}} />
+                                    {/* Restart */}
+                                </Fab>
+                                <Button size="large" disabled={!validOtp || !otp} className={[classes.scanButton, classes.navigationButton, validOtp && 'simple-gradient-block'].join(' ')} variant={validOtp ? 'text' : 'outlined'} onClick={() => signMessage()}>Sign Message</Button>
+                            </EthereumInteractionZone>
+                        </Box>
                     </div>
                 </>
             }
@@ -262,7 +267,7 @@ const EntrantPage = (props: IEntrantPage) => {
                     {/* a malicious party could try to use your signed message to impersonate you and gain access to the event. */}
                         <span style={{color: 'red'}}>IMPORTANT</span><br/><b>Do not share your QR code with anyone other than official event entry staff</b>
                     </Typography>
-                    <div style={{ height: "auto", background: 'white', margin: "0 auto", maxWidth: 600, padding: 8, width: "100%", marginBottom: 200 }}>
+                    <div style={{ height: "auto", background: 'white', margin: "0 auto", maxWidth: 600, padding: 8, width: "100%", marginBottom: 20 }}>
                         <QRCode
                         size={256}
                         style={{ height: "auto", maxWidth: "100%", width: "100%", verticalAlign: "top"}}
@@ -273,6 +278,12 @@ const EntrantPage = (props: IEntrantPage) => {
                         viewBox={`0 0 256 256`}
                         />
                     </div>
+                    <Box className={classes.navigationContainer} sx={{ width: '100%' }}>
+                        <Fab className={[classes.navigationButton, 'simple-gradient-block'].join(' ')} onClick={() => {setActiveStep(0)}}>
+                            <ReplayIcon style={{height: '2rem', width: '2rem'}} />
+                            {/* Restart */}
+                        </Fab>
+                    </Box>
                 </div>
             }
         </Container>
