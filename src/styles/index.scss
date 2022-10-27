@@ -102,7 +102,8 @@ code {
 
 .qr-code-scanner-video {
   div {
-    width: 800px!important;
+    max-width: 600px!important;
+    width: calc(100vw - 65px)!important;
   }
   video {
     top: 0px!important;

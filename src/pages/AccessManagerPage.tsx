@@ -180,7 +180,7 @@ const AccessManagerPage = (props: IAccessManagerPage) => {
               <Grid container className={classes.otpRow} spacing={2}>
                 {otp.split('').map((number, index) => {
                   return (
-                    <Grid key={`otp-${index}`} item xs={2} sm={2} md={2} lg={2}>
+                    <Grid key={`otp-${index}`} item xs={4} sm={4} md={2} lg={2}>
                       <div className={[classes.numberContainer, darkMode ? classes.numberContainerDarkMode : classes.numberContainerLightMode].join(' ')}>
                         {/* use h2 when mobile */}
                         <div className={'gradient-block-inner'}/>

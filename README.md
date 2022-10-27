@@ -1,6 +1,11 @@
-# Tokevent.org
+# tokevent.org (beta)
 
-This is a platform made for token-gating physical events (e.g. using NFTs as tickets) and can also be used for doing simple auth for address holders without needing to make on-chain transactions (e.g. making sure you are communicating with the holder of the private key of a particular address).
+This is a platform made for token-gating physical events (e.g. using NFTs as tickets) and can also be used for doing simple auth for address holders without needing to make on-chain transactions (e.g. making sure you are communicating relatively directly with the holder of a private key of a particular address), this platform is also constructed in a way to minimize any reliance on centralized infrastructure. It is easy to self-host & does not rely on a centralized API.
+
+## Acknowledgements
+
+The construction of this platform was made possible by an independent infrastructure grant from https://seen.haus - thank you for supporting independent infrastructure and enabling the development of this public good for the NFT space.
+
 
 ## IPFS-ready
 
