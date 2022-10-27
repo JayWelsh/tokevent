@@ -59,8 +59,8 @@ const useStyles = makeStyles((theme: Theme) =>
       marginRight: theme.spacing(1),
     },
     title: {
-      marginTop: theme.spacing(6),
-      marginBottom: theme.spacing(2),
+      paddingTop: theme.spacing(6),
+      paddingBottom: theme.spacing(2),
       textAlign: 'center',
     },
     subtitle: {

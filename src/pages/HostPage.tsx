@@ -18,8 +18,8 @@ import { extractIpfsLink } from '../utils';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     title: {
-      marginTop: theme.spacing(6),
-      marginBottom: theme.spacing(2),
+      paddingTop: theme.spacing(6),
+      paddingBottom: theme.spacing(2),
       textAlign: 'center',
     },
     subtitle: {

@@ -9,7 +9,7 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
+// import MenuIcon from '@mui/icons-material/Menu';
 import DarkModeIcon from '@mui/icons-material/NightsStay';
 import LightModeIcon from '@mui/icons-material/WbSunny';
 
@@ -45,12 +45,12 @@ const NavigationTopBar = (props: PropsFromRedux & RouteComponentProps) => {
 
   const isMobileView = useMobileView();
 
-  const [localShowLeftMenu, setLocalShowLeftMenu] = useState(props.showLeftMenu)
+  // const [localShowLeftMenu, setLocalShowLeftMenu] = useState(props.showLeftMenu)
   const [localDarkMode, setLocalDarkMode] = useState(props.darkMode)
 
-  useEffect(() => {
-    setLocalShowLeftMenu(props.showLeftMenu)
-  }, [props.showLeftMenu])
+  // useEffect(() => {
+  //   setLocalShowLeftMenu(props.showLeftMenu)
+  // }, [props.showLeftMenu])
 
   useEffect(() => {
     setLocalDarkMode(props.darkMode)
@@ -61,7 +61,7 @@ const NavigationTopBar = (props: PropsFromRedux & RouteComponentProps) => {
     <div className={classes.root}>
       <AppBar style={{background: 'linear-gradient(-90deg, #272727, #000000)'}} position="static">
         <Toolbar>
-          {!isMobileView &&
+          {/* {!isMobileView &&
             <IconButton
               onClick={() => props.setShowLeftMenu(!localShowLeftMenu)}
               edge="start"
@@ -71,7 +71,7 @@ const NavigationTopBar = (props: PropsFromRedux & RouteComponentProps) => {
               size="large">
               <MenuIcon />
             </IconButton>
-          }
+          } */}
           <img onClick={() => props.history.push('/')} height={'46px'} style={{marginRight: '10px', cursor: 'pointer'}} src={localDarkMode ? LogoDarkMode : LogoLightMode} alt="logo" />
           {!isMobileView &&
             <Typography onClick={() => props.history.push('/')} variant="h6" className={classes.title}>
