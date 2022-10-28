@@ -220,6 +220,7 @@ const EntrantPage = (props: IEntrantPage) => {
                             numInputs={6}
                             isMobileView={isMobileView}
                             darkMode={darkMode}
+                            shouldAutoFocus={true}
                         />
                     </div>
                     <Box className={classes.navigationContainer} sx={{ width: '100%' }}>
