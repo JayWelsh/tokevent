@@ -20,6 +20,7 @@ export interface IHost {
   description?: string
   events: IEvent[]
   image: string
+  hidden?: boolean
 }
 
 export interface ISlugToHost {
@@ -51,6 +52,30 @@ export interface ISlugToHost {
 //     }
 //   ]
 // }
+
+const DemoHost : IHost = {
+  name: 'demo',
+  description: 'a demo host to preview the functionality of tokevent.org',
+  image: 'ipfs://QmW8imDcfrJE74ZGuJFtzHcNapLZc8nbn6wb98Eku1sonq',
+  hidden: true,
+  events: [
+    {
+      name: 'demo event',
+      slug: 'demo-event',
+      description: 'a demo event to preview tokevent.org functionality',
+      startTimeUnix: 1664851700,
+      image: 'ipfs://QmW8imDcfrJE74ZGuJFtzHcNapLZc8nbn6wb98Eku1sonq',
+      tokens: [
+        {
+          address: '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85', // ENS (https://opensea.io/collection/ens)
+          network: 'mainnet',
+          standard: 'ERC721',
+          tokensPerTicket: 1,
+        }
+      ]
+    },
+  ]
+}
 
 const PropyHost : IHost = {
   name: 'Propy',
@@ -92,6 +117,7 @@ const WgmisHost : IHost = {
 }
 
 const slugToHost : ISlugToHost = {
+  'demo': DemoHost,
   'propy': PropyHost,
   'wgmis': WgmisHost,
 }

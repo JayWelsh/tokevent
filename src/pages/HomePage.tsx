@@ -66,7 +66,7 @@ const HomePage = (props: IHomePage) => {
                 Who is hosting your event?
             </Typography>
             <Grid container className={classes.hostContainer} spacing={3}>
-                {Object.entries(slugToHost).map((slugAndHost, index) =>
+                {Object.entries(slugToHost).filter(slugAndHost => !slugAndHost[1].hidden).map((slugAndHost, index) =>
                     <Grid key={`host-item-${index}-${slugAndHost[0]}`} item xs={12} sm={12} md={6} lg={6}>
                         <CardActionArea>
                             <Link to={`/${slugAndHost[0]}`} className="no-decorate">
