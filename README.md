@@ -1,6 +1,8 @@
 # tokevent.org (beta)
 
-This is a platform made for token-gating physical events (e.g. using NFTs as tickets) and can also be used for doing simple auth for address holders without needing to make on-chain transactions (e.g. making sure you are communicating relatively directly with the holder of a private key of a particular address), this platform is also constructed in a way to minimize any reliance on centralized infrastructure. It is easy to self-host & does not rely on a centralized API.
+[tokevent.org](https://tokevent.org) is a platform made for token-gating physical events (e.g. using NFTs as tickets) and can also be used for doing simple auth for address holders without needing to make on-chain transactions (e.g. making sure you are communicating relatively directly with the holder of a private key of a particular address), this platform is also constructed in a way to minimize any reliance on centralized infrastructure. It is easy to self-host & does not rely on a centralized API.
+
+[Discord](https://discord.gg/HCtbFsKDvE) | [Telegram](https://t.me/tokevent)
 
 ## Acknowledgements
 
@@ -46,7 +48,7 @@ For the following example, let's imaging our host organization is named "ethorg"
 
 Note: this application is in beta
 
-1. Right now, tokevent.org is intentionally built without a backend/api in order to preserve decentralization. This means that it is not possible to guarantee that a particular token ID isn't used more than once (for example, in a 1 token 1 ticket setup, an entrant might send their token to their friend directly after gaining access to the event, and then their friend might use the same token ID to gain entry to the event), this means that it is recommended for event staff to maintain a list (e.g. a google spreadsheet) of all token IDs that are being used to enter, and to check each new entrant against that list. We are currently going through an ideation phase of how to use smart contracts to solve this issue but also want to make sure that costs are low (e.g. using an L2) and that the data committed to the chain is privacy-preserving enough to not expose publicly which token IDs are being used to gain access to which physical events. This is an open area of improvement for tokevent and any community contributions, suggestions or discussions are appreciated.
+1. Right now, tokevent.org is intentionally built without a backend/api in order to preserve decentralization. This means that it is not possible to guarantee that a particular token ID isn't used more than once (for example, in a 1 token 1 ticket setup, an entrant might send their token to their friend directly after gaining access to the event, and then their friend might use the same token ID to gain entry to the event), therefore, it is recommended for event staff to maintain a list (e.g. a google spreadsheet) of all token IDs that are being used to enter, and to check each new entrant against that list (for more details on this process please ask for help via [Discord](https://discord.gg/HCtbFsKDvE) or [Telegram](https://t.me/tokevent)). We are currently going through an ideation phase of how to use smart contracts to solve this issue but also want to make sure that costs are low (e.g. using an L2) and that the data committed to the chain is privacy-preserving enough to not expose publicly which token IDs are being used to gain access to which physical events. This is an open area of improvement for tokevent and any community contributions, suggestions or discussions are appreciated.
 
 ## IPFS-ready
 
