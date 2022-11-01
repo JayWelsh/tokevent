@@ -2,7 +2,17 @@
 
 [tokevent.org](https://tokevent.org) is a platform made for token-gating physical events (e.g. using NFTs as tickets) and can also be used for doing simple auth for address holders without needing to make on-chain transactions (e.g. making sure you are communicating relatively directly with the holder of a private key of a particular address), this platform is also constructed in a way to minimize any reliance on centralized infrastructure. It is easy to self-host & does not rely on a centralized API.
 
-[Discord](https://discord.gg/HCtbFsKDvE) | [Telegram](https://t.me/tokevent)
+Feel free to reach out via [Discord](https://discord.gg/HCtbFsKDvE) or [Telegram](https://t.me/tokevent) if you would like to use tokevent.org to host a token-gated event or for basic off-chain account auth, or if you have any queries or require any explanations.
+
+## Demo
+
+A demo of the perspective of both attendees and access management staff can be found via the following URLs:
+
+Access management staff demo: [tokevent.org/demo/access](https://tokevent.org/demo/access)
+
+Attendee demo: [tokevent.org/demo](https://tokevent.org/demo)
+
+By opening both of these links in their own tabs/windows, you can test out the full process flow (attendee demo page requires a browser with a web3 wallet connection, e.g. metamask). The demo uses [ENS token](https://opensea.io/collection/ens) ownership on Ethereum L1 mainnet as the token-gating mechanism (i.e. 1 ENS token = 1 ticket), so if the attendee account that signs the message owns an ENS domain, the access management portal will show that the account is entitled to one ticket, otherwise it will say that the signer is not entitled to a ticket ([Discord](https://discord.gg/HCtbFsKDvE) or [Telegram](https://t.me/tokevent) for help).
 
 ## Acknowledgements
 
