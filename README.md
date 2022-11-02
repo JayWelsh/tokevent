@@ -1,6 +1,6 @@
 # tokevent.org (beta)
 
-[tokevent.org](https://tokevent.org) is a platform made for token-gating physical events (e.g. using NFTs as tickets) and can also be used for doing simple auth for address holders without needing to make on-chain transactions (e.g. making sure you are communicating relatively directly with the holder of a private key of a particular address), this platform is also constructed in a way to minimize any reliance on centralized infrastructure. It is easy to self-host & does not rely on a centralized API.
+[tokevent.org](https://tokevent.org) is a platform made for token-gating physical events (e.g. using **existing** NFTs as tickets, e.g. letting people use their ENS domains as physical tickets to an event without any on-chain transactions) and can also be used for doing simple auth for address holders without needing to make on-chain transactions (e.g. making sure you are communicating relatively directly with the holder of a private key of a particular address), this platform is also constructed in a way to minimize any reliance on centralized infrastructure. It is easy to self-host & does not rely on a centralized API.
 
 Feel free to reach out via [Discord](https://discord.gg/HCtbFsKDvE) or [Telegram](https://t.me/tokevent) if you would like to use tokevent.org to host a token-gated event or for basic off-chain account auth, or if you have any queries or require any explanations.
 
